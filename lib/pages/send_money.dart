@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:country_picker/country_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:e_wallet/provider/auth_provider.dart';
 import 'package:e_wallet/utils/start_custom_button.dart';
@@ -16,6 +18,9 @@ class _SendMoneyState extends State<SendMoney> {
 
   final moneyController = TextEditingController();
   final textController = TextEditingController();
+
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
 
   Country selectedCountry = Country(
     phoneCode: "880",
@@ -187,7 +192,7 @@ class _SendMoneyState extends State<SendMoney> {
                       ),
                       const SizedBox(height: 10),
                       textFeld(
-                        hintText: 'Note',
+                        hintText: 'Reference',
                         icon: Icons.notes,
                         inputType: TextInputType.text,
                         maxLines: 2,
@@ -199,7 +204,24 @@ class _SendMoneyState extends State<SendMoney> {
                       SizedBox(
                         width: MediaQuery.of(context).size.width * 0.80,
                         height: 50,
-                        child: CustomButton(text: "Send", onPressed: () {}),
+                        child: CustomButton(
+                            text: "Send",
+                            onPressed: () async {
+                              double amount =
+                                  double.parse(moneyController.text.trim());
+                              assert(amount is double);
+                              print(amount);
+                              String _phoneNumber =
+                                  phoneController.text.trim() as String;
+                              _phoneNumber =
+                                  "+${selectedCountry.phoneCode}$_phoneNumber";
+                              print(_phoneNumber);
+                              String reference =
+                                  textController.text.trim() as String;
+                              print(reference);
+
+                              moneySend(_phoneNumber, reference, amount);
+                            }),
                       ),
                     ],
                   ),
@@ -210,6 +232,59 @@ class _SendMoneyState extends State<SendMoney> {
         ),
       ),
     );
+  }
+
+  // Send money to other accounts.
+  void moneySend(String _phoneNumber, String reference, double amount) async {
+    await _firebaseFirestore
+        .collection("users")
+        .doc(_firebaseAuth.currentUser!.phoneNumber)
+        .get()
+        .then((DocumentSnapshot snapshot) async {
+      print(snapshot['balance']);
+      if (snapshot['balance'] < amount) {
+        print('Insufficient balance');
+        return;
+      } else if (await phoneNumberExists(_phoneNumber) == true) {
+        try {
+          await _firebaseFirestore
+              .collection("users")
+              .doc(_phoneNumber)
+              .get()
+              .then((DocumentSnapshot _snapshot) async {
+            // _snapshot['balance'] = balance;
+            _firebaseFirestore
+                .collection('users')
+                .doc(_phoneNumber)
+                .update({'balance': _snapshot['balance'] + amount});
+          });
+          _firebaseFirestore
+              .collection('users')
+              .doc(_firebaseAuth.currentUser!.phoneNumber)
+              .update({'balance': snapshot['balance'] - amount});
+
+          print('Successfully updated');
+        } on FirebaseException catch (e) {
+          print(e.message.toString());
+          return;
+        }
+      } else {
+        print('user not found');
+        return;
+      }
+    });
+  }
+
+  Future<bool> phoneNumberExists(String _phoneNumber) async {
+    try {
+      var collectionRef = _firebaseFirestore.collection('users');
+      var doc = await collectionRef.doc(_phoneNumber).get();
+      return doc.exists;
+    } on FirebaseException catch (e) {
+      print(e.message.toString());
+      return false;
+      // throw e;
+    }
   }
 
   Widget textFeld({
