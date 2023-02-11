@@ -105,8 +105,8 @@ class _AddMoneyState extends State<AddMoney> {
                           textFeld(
                             hintText: 'Enter amount',
                             icon: Icons.monetization_on_outlined,
-                            inputType:
-                                TextInputType.numberWithOptions(decimal: true),
+                            inputType: const TextInputType.numberWithOptions(
+                                decimal: true),
                             maxLines: 1,
                             textSize: 18,
                             fontWeight: FontWeight.bold,
