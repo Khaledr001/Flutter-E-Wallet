@@ -234,4 +234,72 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // Add the Transactional information to the Firebase
+
+  Future addSendTransactionInfo({
+    required BuildContext context,
+    required String transactionType,
+    required String PhoneNumber,
+    required double amount,
+    required String reference,
+    required String transactionId,
+    required String time,
+  }) async {
+    notifyListeners();
+    try {
+      await _firebaseFirestore
+          .collection('users')
+          .doc(_firebaseAuth.currentUser!.phoneNumber)
+          .collection('transactions')
+          .doc(transactionId)
+          .set({
+        'type': transactionType,
+        'phoneNumber': PhoneNumber,
+        'amount': amount,
+        'reference': reference,
+        'time': time,
+      }).then((value) {
+        // onSuccess();
+        // _isLoading = false;
+        notifyListeners();
+      });
+    } on FirebaseAuthException catch (e) {
+      showSnackBar(context, e.message.toString());
+      notifyListeners();
+    }
+  }
+
+  Future addReceiveTransactionInfo({
+    required BuildContext context,
+    required String transactionType,
+    required String PhoneNumber,
+    required double amount,
+    required String reference,
+    required String transactionId,
+    required String time,
+  }) async {
+    notifyListeners();
+    try {
+      await _firebaseFirestore
+          .collection('users')
+          .doc(PhoneNumber)
+          .collection('transactions')
+          .doc(transactionId)
+          .set({
+        'type': transactionType,
+        'phoneNumber': _firebaseAuth.currentUser!.phoneNumber,
+        'amount': amount,
+        'reference': reference,
+        'time': time,
+      }).then((value) {
+        // onSuccess();
+        // _isLoading = false;
+        notifyListeners();
+      });
+    } on FirebaseAuthException catch (e) {
+      showSnackBar(context, e.message.toString());
+      notifyListeners();
+    }
+  }
 }

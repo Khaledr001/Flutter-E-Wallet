@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_wallet/provider/auth_provider.dart';
 import 'package:e_wallet/screens/welcome_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -13,10 +15,28 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
+  double balance = 0.0;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    _firebaseFirestore
+        .collection("users")
+        .doc(_firebaseAuth.currentUser!.phoneNumber)
+        .get()
+        .then((DocumentSnapshot snapshot) {
+      setState(() {
+        balance = snapshot['balance'];
+      });
+    });
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     final ap = Provider.of<AuthProvider>(context, listen: false);
-    final double amount = ap.userModel.balance;
     // print();
     return Scaffold(
       backgroundColor: Colors.grey[200],
@@ -58,7 +78,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 const SizedBox(width: 30),
                 Text(
-                  'Balance: $amount',
+                  'Balance: $balance',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ],

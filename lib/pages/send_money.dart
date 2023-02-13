@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:country_picker/country_picker.dart';
+import 'package:e_wallet/utils/utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:e_wallet/provider/auth_provider.dart';
 import 'package:e_wallet/utils/start_custom_button.dart';
 import 'package:provider/provider.dart';
+import 'dart:math';
+import 'package:e_wallet/provider/auth_provider.dart';
 
 class SendMoney extends StatefulWidget {
   const SendMoney({super.key});
@@ -37,6 +40,8 @@ class _SendMoneyState extends State<SendMoney> {
 
   @override
   Widget build(BuildContext context) {
+    final ap = Provider.of<AuthProvider>(context, listen: false);
+
     phoneController.selection = TextSelection.fromPosition(
       TextPosition(
         offset: phoneController.text.length,
@@ -100,131 +105,147 @@ class _SendMoneyState extends State<SendMoney> {
                 const SizedBox(height: 30),
                 Container(
                   padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        cursorColor: Colors.purple,
-                        controller: phoneController,
-                        keyboardType: TextInputType.phone,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                  child: Column(children: [
+                    TextFormField(
+                      cursorColor: Colors.purple,
+                      controller: phoneController,
+                      keyboardType: TextInputType.phone,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          phoneController.text = value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        fillColor: Colors.purple.shade50,
+                        filled: true,
+                        hintText: "Enter phone number",
+                        hintStyle: TextStyle(
+                          fontWeight: FontWeight.w400,
+                          fontSize: 15,
+                          color: Colors.grey.shade600,
                         ),
-                        onChanged: (value) {
-                          setState(() {
-                            phoneController.text = value;
-                          });
-                        },
-                        decoration: InputDecoration(
-                          fillColor: Colors.purple.shade50,
-                          filled: true,
-                          hintText: "Enter phone number",
-                          hintStyle: TextStyle(
-                            fontWeight: FontWeight.w400,
-                            fontSize: 15,
-                            color: Colors.grey.shade600,
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide:
-                                const BorderSide(color: Colors.transparent),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide:
-                                const BorderSide(color: Colors.transparent),
-                          ),
-                          prefixIcon: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 11, vertical: 13),
-                            child: InkWell(
-                              onTap: () {
-                                showCountryPicker(
-                                    context: context,
-                                    countryListTheme:
-                                        const CountryListThemeData(
-                                      bottomSheetHeight: 550,
-                                    ),
-                                    onSelect: (value) {
-                                      setState(() {
-                                        selectedCountry = value;
-                                      });
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide:
+                              const BorderSide(color: Colors.transparent),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide:
+                              const BorderSide(color: Colors.transparent),
+                        ),
+                        prefixIcon: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 11, vertical: 13),
+                          child: InkWell(
+                            onTap: () {
+                              showCountryPicker(
+                                  context: context,
+                                  countryListTheme: const CountryListThemeData(
+                                    bottomSheetHeight: 550,
+                                  ),
+                                  onSelect: (value) {
+                                    setState(() {
+                                      selectedCountry = value;
                                     });
-                              },
-                              child: Text(
-                                "${selectedCountry.flagEmoji} + ${selectedCountry.phoneCode}",
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                  });
+                            },
+                            child: Text(
+                              "${selectedCountry.flagEmoji} + ${selectedCountry.phoneCode}",
+                              style: const TextStyle(
+                                fontSize: 18,
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
-                          suffixIcon: phoneController.text.length > 9
-                              ? Container(
-                                  height: 30,
-                                  width: 30,
-                                  margin: const EdgeInsets.all(10.0),
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.green,
-                                  ),
-                                  child: const Icon(
-                                    Icons.done,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                )
-                              : null,
                         ),
+                        suffixIcon: phoneController.text.length > 9
+                            ? Container(
+                                height: 30,
+                                width: 30,
+                                margin: const EdgeInsets.all(10.0),
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.green,
+                                ),
+                                child: const Icon(
+                                  Icons.done,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              )
+                            : null,
                       ),
-                      const SizedBox(height: 20),
-                      textFeld(
-                        hintText: 'Enter amount',
-                        icon: Icons.monetization_on_outlined,
-                        inputType: const TextInputType.numberWithOptions(
-                            decimal: true),
-                        maxLines: 1,
-                        textSize: 18,
-                        fontWeight: FontWeight.bold,
-                        controller: moneyController,
-                      ),
-                      const SizedBox(height: 10),
-                      textFeld(
-                        hintText: 'Reference',
-                        icon: Icons.notes,
-                        inputType: TextInputType.text,
-                        maxLines: 2,
-                        textSize: 17,
-                        fontWeight: FontWeight.normal,
-                        controller: textController,
-                      ),
-                      const SizedBox(height: 50),
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.80,
-                        height: 50,
-                        child: CustomButton(
-                            text: "Send",
-                            onPressed: () async {
-                              double amount =
-                                  double.parse(moneyController.text.trim());
-                              assert(amount is double);
-                              print(amount);
-                              String _phoneNumber =
-                                  phoneController.text.trim() as String;
-                              _phoneNumber =
-                                  "+${selectedCountry.phoneCode}$_phoneNumber";
-                              print(_phoneNumber);
-                              String reference =
-                                  textController.text.trim() as String;
-                              print(reference);
+                    ),
+                    const SizedBox(height: 20),
+                    textFeld(
+                      hintText: 'Enter amount',
+                      icon: Icons.monetization_on_outlined,
+                      inputType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      maxLines: 1,
+                      textSize: 18,
+                      fontWeight: FontWeight.bold,
+                      controller: moneyController,
+                    ),
+                    const SizedBox(height: 10),
+                    textFeld(
+                      hintText: 'Reference',
+                      icon: Icons.notes,
+                      inputType: TextInputType.text,
+                      maxLines: 2,
+                      textSize: 17,
+                      fontWeight: FontWeight.normal,
+                      controller: textController,
+                    ),
+                    const SizedBox(height: 50),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.80,
+                      height: 50,
+                      child: CustomButton(
+                          text: "Send",
+                          onPressed: () async {
+                            double amount =
+                                double.parse(moneyController.text.trim());
+                            assert(amount is double);
+                            print(amount);
+                            String _phoneNumber =
+                                phoneController.text.trim() as String;
+                            _phoneNumber =
+                                "+${selectedCountry.phoneCode}$_phoneNumber";
+                            print(_phoneNumber);
+                            String reference =
+                                textController.text.trim() as String;
+                            print(reference);
+                            String transactionId = genarateTransactionId();
+                            print(transactionId);
+                            String datetime = dateTime();
 
-                              moneySend(_phoneNumber, reference, amount);
-                            }),
-                      ),
-                    ],
-                  ),
+                            moneySend(context, _phoneNumber, reference, amount);
+                            ap.addSendTransactionInfo(
+                                context: context,
+                                transactionType: 'send',
+                                PhoneNumber: _phoneNumber,
+                                amount: amount,
+                                reference: reference,
+                                transactionId: transactionId,
+                                time: datetime);
+                            ap.addReceiveTransactionInfo(
+                                context: context,
+                                transactionType: 'receive',
+                                PhoneNumber: _phoneNumber,
+                                amount: amount,
+                                reference: reference,
+                                transactionId: transactionId,
+                                time: datetime);
+                          }),
+                    ),
+                  ]),
                 ),
               ],
             ),
@@ -234,8 +255,29 @@ class _SendMoneyState extends State<SendMoney> {
     );
   }
 
+  // Generate the transaction Id
+  String genarateTransactionId() {
+    final random = Random();
+    const chars =
+        "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    String transactionId = '';
+    for (int i = 0; i < 10; i++) {
+      transactionId += chars[random.nextInt(chars.length)];
+    }
+
+    return transactionId;
+  }
+
+  // Get Time
+  String dateTime() {
+    var now = DateTime.now();
+    print(now.toString());
+    return now.toString();
+  }
+
   // Send money to other accounts.
-  void moneySend(String _phoneNumber, String reference, double amount) async {
+  void moneySend(BuildContext context, String _phoneNumber, String reference,
+      double amount) async {
     await _firebaseFirestore
         .collection("users")
         .doc(_firebaseAuth.currentUser!.phoneNumber)
@@ -243,7 +285,8 @@ class _SendMoneyState extends State<SendMoney> {
         .then((DocumentSnapshot snapshot) async {
       print(snapshot['balance']);
       if (snapshot['balance'] < amount) {
-        print('Insufficient balance');
+        showSnackBar(context, 'Insufficient balance');
+        // print('Insufficient balance');
         return;
       } else if (await phoneNumberExists(_phoneNumber) == true) {
         try {
@@ -265,11 +308,13 @@ class _SendMoneyState extends State<SendMoney> {
 
           print('Successfully updated');
         } on FirebaseException catch (e) {
-          print(e.message.toString());
+          showSnackBar(context, e.message.toString());
+          // print(e.message.toString());
           return;
         }
       } else {
-        print('user not found');
+        showSnackBar(context, 'User not found');
+        // print('user not found');
         return;
       }
     });
