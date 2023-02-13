@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:country_picker/country_picker.dart';
+import 'package:e_wallet/utils/transection.dart';
 import 'package:e_wallet/utils/utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +25,8 @@ class _SendMoneyState extends State<SendMoney> {
 
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
+
+  final transectionUtils tu = transectionUtils();
 
   Country selectedCountry = Country(
     phoneCode: "880",
@@ -222,9 +225,9 @@ class _SendMoneyState extends State<SendMoney> {
                             String reference =
                                 textController.text.trim() as String;
                             print(reference);
-                            String transactionId = genarateTransactionId();
+                            String transactionId = tu.genarateTransactionId();
                             print(transactionId);
-                            String datetime = dateTime();
+                            String datetime = tu.dateTime();
 
                             moneySend(context, _phoneNumber, reference, amount);
                             ap.addSendTransactionInfo(
@@ -255,27 +258,7 @@ class _SendMoneyState extends State<SendMoney> {
     );
   }
 
-  // Generate the transaction Id
-  String genarateTransactionId() {
-    final random = Random();
-    const chars =
-        "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    String transactionId = '';
-    for (int i = 0; i < 10; i++) {
-      transactionId += chars[random.nextInt(chars.length)];
-    }
-
-    return transactionId;
-  }
-
-  // Get Time
-  String dateTime() {
-    var now = DateTime.now();
-    print(now.toString());
-    return now.toString();
-  }
-
-  // Send money to other accounts.
+  // Send money to other account.
   void moneySend(BuildContext context, String _phoneNumber, String reference,
       double amount) async {
     await _firebaseFirestore
@@ -283,7 +266,7 @@ class _SendMoneyState extends State<SendMoney> {
         .doc(_firebaseAuth.currentUser!.phoneNumber)
         .get()
         .then((DocumentSnapshot snapshot) async {
-      print(snapshot['balance']);
+      // print(snapshot['balance']);
       if (snapshot['balance'] < amount) {
         showSnackBar(context, 'Insufficient balance');
         // print('Insufficient balance');

@@ -179,7 +179,7 @@ class _HomePageState extends State<HomePage> with ChangeNotifier {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const ProfilePage()),
+                              builder: (context) => ProfilePage()),
                         );
                       },
                       child: Container(

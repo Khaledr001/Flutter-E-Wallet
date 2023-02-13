@@ -39,7 +39,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 ),
                 const SizedBox(height: 10),
                 const Text(
-                  "Never a better time than now to start.",
+                  "New way to manage your wallet",
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.black38,

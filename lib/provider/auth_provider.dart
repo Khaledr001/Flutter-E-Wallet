@@ -302,4 +302,38 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  //
+  Future addReceiveTransactionInfoFromCard({
+    required BuildContext context,
+    required String transactionType,
+    required String cardNumber,
+    required double amount,
+    required String reference,
+    required String transactionId,
+    required String time,
+  }) async {
+    notifyListeners();
+    try {
+      await _firebaseFirestore
+          .collection('users')
+          .doc(_firebaseAuth.currentUser!.phoneNumber)
+          .collection('transactions')
+          .doc(transactionId)
+          .set({
+        'type': transactionType,
+        'cardNumver': cardNumber,
+        'amount': amount,
+        'reference': reference,
+        'time': time,
+      }).then((value) {
+        // onSuccess();
+        // _isLoading = false;
+        notifyListeners();
+      });
+    } on FirebaseAuthException catch (e) {
+      showSnackBar(context, e.message.toString());
+      notifyListeners();
+    }
+  }
 }

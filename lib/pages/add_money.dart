@@ -1,8 +1,15 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:e_wallet/utils/transection.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
+import 'package:provider/provider.dart';
 
+import '../provider/auth_provider.dart';
+import '../utils/my_textField.dart';
 import '../utils/start_custom_button.dart';
+import '../utils/utils.dart';
 
 class AddMoney extends StatefulWidget {
   const AddMoney({super.key});
@@ -15,8 +22,17 @@ class _AddMoneyState extends State<AddMoney> {
   final moneyController = TextEditingController();
   final cardNumberController = TextEditingController();
   final textController = TextEditingController();
+
+  final transectionUtils tu = new transectionUtils();
+  final myTextField textField = new myTextField();
+
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
+
   @override
   Widget build(BuildContext context) {
+    final ap = Provider.of<AuthProvider>(context, listen: false);
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -91,18 +107,18 @@ class _AddMoneyState extends State<AddMoney> {
                     child: Center(
                       child: Column(
                         children: [
-                          textFeld(
+                          textField.textFeld(
                             hintText: 'Enter your Card Number',
                             icon: Icons.credit_card_rounded,
-                            inputType:
-                                TextInputType.numberWithOptions(decimal: true),
+                            inputType: const TextInputType.numberWithOptions(
+                                decimal: true),
                             maxLines: 1,
                             textSize: 18,
                             fontWeight: FontWeight.bold,
                             controller: cardNumberController,
                           ),
                           const SizedBox(height: 10),
-                          textFeld(
+                          textField.textFeld(
                             hintText: 'Enter amount',
                             icon: Icons.monetization_on_outlined,
                             inputType: const TextInputType.numberWithOptions(
@@ -113,7 +129,7 @@ class _AddMoneyState extends State<AddMoney> {
                             controller: moneyController,
                           ),
                           const SizedBox(height: 10),
-                          textFeld(
+                          textField.textFeld(
                             hintText: 'Note',
                             icon: Icons.notes,
                             inputType: TextInputType.text,
@@ -127,7 +143,34 @@ class _AddMoneyState extends State<AddMoney> {
                             width: MediaQuery.of(context).size.width * 0.80,
                             height: 50,
                             child: CustomButton(
-                                text: "Validate and Confirm", onPressed: () {}),
+                                text: "Validate and Confirm",
+                                onPressed: () {
+                                  double amount =
+                                      double.parse(moneyController.text.trim());
+                                  assert(amount is double);
+                                  // print(amount);
+                                  String cardNumber = cardNumberController.text
+                                      .trim() as String;
+                                  // print(cardNumber);
+                                  String reference =
+                                      textController.text.trim() as String;
+                                  // print(reference);
+
+                                  String transactionId =
+                                      tu.genarateTransactionId();
+                                  String time = tu.dateTime();
+
+                                  moneyAdded(
+                                      context, cardNumber, amount, reference);
+                                  ap.addReceiveTransactionInfoFromCard(
+                                      context: context,
+                                      transactionType: 'receive',
+                                      cardNumber: cardNumber,
+                                      amount: amount,
+                                      reference: reference,
+                                      transactionId: transactionId,
+                                      time: time);
+                                }),
                           ),
                         ],
                       ),
@@ -142,62 +185,22 @@ class _AddMoneyState extends State<AddMoney> {
     );
   }
 
-  Widget textFeld({
-    required String hintText,
-    required IconData icon,
-    required TextInputType inputType,
-    required int maxLines,
-    required double textSize,
-    required FontWeight fontWeight,
-    required TextEditingController controller,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: TextFormField(
-        cursorColor: Colors.purple,
-        controller: controller,
-        keyboardType: inputType,
-        maxLines: maxLines,
-        style: TextStyle(
-          fontSize: textSize,
-          fontWeight: fontWeight,
-        ),
-        decoration: InputDecoration(
-          prefixIcon: Container(
-            margin: const EdgeInsets.all(8.0),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: Colors.purple,
-            ),
-            child: Icon(
-              icon,
-              size: 25,
-              color: Colors.white,
-            ),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(
-              color: Colors.transparent,
-            ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(
-              color: Colors.transparent,
-            ),
-          ),
-          hintText: hintText,
-          hintStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-          ),
-          alignLabelWithHint: true,
-          border: InputBorder.none,
-          fillColor: Colors.purple.shade50,
-          filled: true,
-        ),
-      ),
-    );
+  void moneyAdded(BuildContext context, String cardNumber, double amount,
+      String reference) async {
+    try {
+      await _firebaseFirestore
+          .collection("users")
+          .doc(_firebaseAuth.currentUser!.phoneNumber)
+          .get()
+          .then((DocumentSnapshot snapshot) async {
+        await _firebaseFirestore
+            .collection('users')
+            .doc(_firebaseAuth.currentUser!.phoneNumber)
+            .update({'balance': snapshot['balance'] + amount});
+      });
+      print('balance updated');
+    } on FirebaseException catch (e) {
+      showSnackBar(context, e.message.toString());
+    }
   }
 }
