@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_wallet/pages/send_money.dart';
+import 'package:e_wallet/pages/transection_page.dart';
 import 'package:e_wallet/utils/my_button.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -70,13 +71,6 @@ class _HomePageState extends State<HomePage> with ChangeNotifier {
       querySnapshot.docs.forEach((doc) {
         setState(() {
           myCard.add(
-            // MyCard(
-            //   // balance: 10,
-            //   cardNumber: doc["cardNumber"].toString(),
-            //   expiryMonth: doc['expiryDate'].toString(),
-            //   // expiryYear: 25,
-            //   color: myColor[(i++) % 4],
-            // ),
             CreditCardWidget(
               cardNumber: doc["cardNumber"],
               expiryDate: doc['expiryDate'],
@@ -290,7 +284,12 @@ class _HomePageState extends State<HomePage> with ChangeNotifier {
                           titleSubtitle: 'Payment and Income'),
                     ),
                     InkWell(
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => transactionPage()));
+                      },
                       child: MyListTitle(
                           iconImagePath: 'assets/transaction.png',
                           titleTitle: 'Transaction',

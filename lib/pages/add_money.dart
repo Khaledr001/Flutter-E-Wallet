@@ -164,7 +164,7 @@ class _AddMoneyState extends State<AddMoney> {
                                       context, cardNumber, amount, reference);
                                   ap.addReceiveTransactionInfoFromCard(
                                       context: context,
-                                      transactionType: 'receive',
+                                      transactionType: 'receive from card',
                                       cardNumber: cardNumber,
                                       amount: amount,
                                       reference: reference,

@@ -1,69 +1,97 @@
 import 'package:flutter/material.dart';
 
 class MyCard extends StatelessWidget {
-  final double balance;
-  final String cardNumber;
-  final String expiryMonth;
-  final int expiryYear;
-  final color;
+  final double amount;
+  final String phoneNumber;
+  final String dateTime;
+  final String transactionId;
+  late String transactionType;
 
-  const MyCard(
+  MyCard(
       {Key? key,
-      required this.balance,
-      required this.cardNumber,
-      required this.expiryMonth,
-      required this.expiryYear,
-      required this.color})
+      required this.amount,
+      required this.phoneNumber,
+      required this.dateTime,
+      required this.transactionId,
+      required this.transactionType})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    String txt = 'Phone Number: ';
+    if (transactionType == 'receive') {
+      transactionType = 'Received from';
+    } else if (transactionType == 'send') {
+      transactionType = 'Sent to';
+    } else {
+      transactionType = "Recieved from card";
+      txt = 'Card Number: ';
+    }
+    String datetime = dateTime.substring(0, 19);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(25, 15, 25, 15),
+      padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 6),
       child: Container(
-        padding: EdgeInsets.fromLTRB(20, 10, 20, 0),
+        height: 110,
+        width: MediaQuery.of(context).size.width * 0.80,
+        padding: const EdgeInsets.all(10.0),
         decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(20),
+          color: Colors.purple[100],
+          borderRadius: BorderRadius.circular(14),
         ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          SizedBox(height: 15),
-          Text(
-            "Balance",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-            ),
-          ),
-          SizedBox(height: 10),
-          Text(
-            '\$' + balance.toString(),
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 35,
-            ),
-          ),
-          SizedBox(height: 50),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                cardNumber.toString(),
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Transactions information
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 3),
+                Text(
+                  transactionType,
+                  style: TextStyle(
+                    fontSize: 16,
+                  ),
                 ),
-              ),
-              Text(
-                expiryMonth.toString() + '/' + expiryYear.toString(),
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
+                const SizedBox(height: 3),
+                Text(
+                  txt + phoneNumber,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ]),
+                const SizedBox(height: 3),
+                Text(
+                  'Trans ID: ' + transactionId,
+                  style: TextStyle(
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  datetime,
+                  style: TextStyle(
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+            // Amount details
+            Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  '${amount}',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

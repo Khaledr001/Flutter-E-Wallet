@@ -248,12 +248,24 @@ class AuthProvider extends ChangeNotifier {
   }) async {
     notifyListeners();
     try {
+      int tNumber = 1;
+      await _firebaseFirestore
+          .collection('users')
+          .doc(_firebaseAuth.currentUser!.phoneNumber)
+          .collection('transactions')
+          // .orderBy('dateTime', descending: true)
+          .get()
+          .then((QuerySnapshot querySnapshot) async {
+        tNumber = querySnapshot.docs.length + 1;
+        transactionId += '_${tNumber}';
+      });
       await _firebaseFirestore
           .collection('users')
           .doc(_firebaseAuth.currentUser!.phoneNumber)
           .collection('transactions')
           .doc(transactionId)
           .set({
+        'tNumber': tNumber,
         'type': transactionType,
         'phoneNumber': PhoneNumber,
         'amount': amount,
@@ -281,12 +293,24 @@ class AuthProvider extends ChangeNotifier {
   }) async {
     notifyListeners();
     try {
+      int tNumber = 1;
+      await _firebaseFirestore
+          .collection('users')
+          .doc(_firebaseAuth.currentUser!.phoneNumber)
+          .collection('transactions')
+          // .orderBy('dateTime', descending: true)
+          .get()
+          .then((QuerySnapshot querySnapshot) async {
+        tNumber = querySnapshot.docs.length + 1;
+        transactionId += '_${tNumber}';
+      });
       await _firebaseFirestore
           .collection('users')
           .doc(PhoneNumber)
           .collection('transactions')
           .doc(transactionId)
           .set({
+        'tNumber': tNumber,
         'type': transactionType,
         'phoneNumber': _firebaseAuth.currentUser!.phoneNumber,
         'amount': amount,
@@ -315,14 +339,27 @@ class AuthProvider extends ChangeNotifier {
   }) async {
     notifyListeners();
     try {
+      int tNumber = 1;
+      await _firebaseFirestore
+          .collection('users')
+          .doc(_firebaseAuth.currentUser!.phoneNumber)
+          .collection('transactions')
+          // .orderBy('dateTime', descending: true)
+          .get()
+          .then((QuerySnapshot querySnapshot) async {
+        tNumber = querySnapshot.docs.length + 1;
+        transactionId += '_${tNumber}';
+      });
+
       await _firebaseFirestore
           .collection('users')
           .doc(_firebaseAuth.currentUser!.phoneNumber)
           .collection('transactions')
           .doc(transactionId)
           .set({
+        'tNumber': tNumber,
         'type': transactionType,
-        'cardNumver': cardNumber,
+        'cardNumber': cardNumber,
         'amount': amount,
         'reference': reference,
         'time': time,
